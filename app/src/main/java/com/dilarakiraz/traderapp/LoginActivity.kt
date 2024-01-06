@@ -3,22 +3,18 @@ package com.dilarakiraz.traderapp
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
-import com.dilarakiraz.traderapp.data.model.response.LoginResponse
+import com.dilarakiraz.traderapp.common.Resource
+import com.dilarakiraz.traderapp.common.showToast
 import com.dilarakiraz.traderapp.data.source.ApiService
 import com.dilarakiraz.traderapp.databinding.ActivityLoginBinding
 import com.dilarakiraz.traderapp.di.RetrofitBuilder
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Response
+import com.dilarakiraz.traderapp.ui.login.LoginViewModel
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
     private lateinit var apiService: ApiService
+    private lateinit var viewModel: LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,82 +22,41 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         apiService = RetrofitBuilder.getRetrofit().create(ApiService::class.java)
+        viewModel = LoginViewModel(apiService)
 
         binding.loginButton.setOnClickListener {
             val username = binding.usernameEditText.text.toString()
             val password = binding.passwordEditText.text.toString()
 
             if (username.isNotBlank() && password.isNotBlank()) {
-                login(username, password)
+                viewModel.login(username, password)
+                observeLoginResult()
             } else {
-                Toast.makeText(
-                    this@LoginActivity,
-                    "Kullanıcı adı ve şifre boş olamaz.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                showToast(getString(R.string.empty_credentials_error))
             }
         }
     }
 
-    private fun handleLoginResponse(response: Response<LoginResponse>) {
-        val loginResponse = response.body()
-
-        if (loginResponse != null) {
-            val result = loginResponse.result
-
-            if (result?.state == true) {
-                val accountNumber = loginResponse.defaultAccount
-
-                if (!accountNumber.isNullOrBlank()) {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Giriş başarılı.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    val intent = Intent(this@LoginActivity, PortfolioActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Hesap numarası alınamadı.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+    private fun observeLoginResult() {
+        viewModel.loginResult.observe(this) { resource ->
+            when (resource) {
+                is Resource.Loading -> {
                 }
-            } else {
-                val errorMessage = result?.description ?: "Giriş başarısız."
-                Toast.makeText(
-                    this@LoginActivity,
-                    errorMessage,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        } else {
-            Toast.makeText(
-                this@LoginActivity,
-                "Sunucu tarafında bir hata oluştu.",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
 
-    private fun login(username: String, password: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response = apiService.login(username = username, password = password)
-                Log.d("LoginActivity", "API çağrısı başarılı. Yanıt: ${response.body()}")
-                withContext(Dispatchers.Main) {
-                    handleLoginResponse(response)
+                is Resource.Success -> {
+                    val accountNumber = resource.data?.defaultAccount
+                    if (!accountNumber.isNullOrBlank()) {
+                        showToast(getString(R.string.successful_login))
+                        val intent = Intent(this@LoginActivity, PortfolioActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        showToast(getString(R.string.account_number_error))
+                    }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                runOnUiThread {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        "Bir hata oluştu: ${e.message}",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                is Resource.Error -> {
+                    showToast(getString(R.string.login_failed_error, resource.message))
                 }
             }
         }

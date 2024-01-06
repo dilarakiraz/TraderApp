@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">TraderApp</string>
+    <string name="empty_credentials_error">Kullanıcı adı ve şifre boş olamaz.</string>
+    <string name="successful_login">Giriş başarılı.</string>
+    <string name="account_number_error">Hesap numarası alınamadı.</string>
+    <string name="login_failed_error">Giriş başarısız: %s</string>
 </resources>
