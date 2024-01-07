@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
  * @author Dilara Kiraz
  */
 
-class PortfolioViewModel (private val apiService: ApiService) : ViewModel(){
+class PortfolioViewModel(private val apiService: ApiService) : ViewModel() {
 
     private val _portfolioResult = MutableLiveData<Resource<PortfolioResponse>>()
     val portfolioResult: LiveData<Resource<PortfolioResponse>> get() = _portfolioResult
@@ -34,9 +34,10 @@ class PortfolioViewModel (private val apiService: ApiService) : ViewModel(){
                 if (portfolioResponse.isSuccessful) {
                     portfolioResponse.body()?.let { portfolio ->
                         if (portfolio.state) {
-                            _portfolioResult.value = Resource.Success(portfolio)
+                            _portfolioResult.value = Resource.Success(portfolio, accountNumber)
 
-                            val portfolioItemList: List<PortfolioItem> = portfolio.items ?: emptyList()
+                            val portfolioItemList: List<PortfolioItem> =
+                                portfolio.items ?: emptyList()
 
                             updateAmountCalculations(portfolioItemList)
 
@@ -55,6 +56,7 @@ class PortfolioViewModel (private val apiService: ApiService) : ViewModel(){
             }
         }
     }
+
     private fun updateAmountCalculations(portfolioItemList: List<PortfolioItem>) {
         portfolioItemList.forEach { item ->
             item.totalAmount = item.quantity * item.lastPrice

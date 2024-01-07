@@ -13,8 +13,8 @@ import com.dilarakiraz.traderapp.data.model.response.PortfolioItem
  * @author Dilara Kiraz
  */
 
-class PortfolioAdapter (private var portfolioItems: List<PortfolioItem>) :
-    RecyclerView.Adapter<PortfolioAdapter.PortfolioViewHolder>(){
+class PortfolioAdapter(private var portfolioItems: List<PortfolioItem>) :
+    RecyclerView.Adapter<PortfolioAdapter.PortfolioViewHolder>() {
 
     fun updateData(newData: List<PortfolioItem>) {
         portfolioItems = newData

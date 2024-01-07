@@ -1,13 +1,10 @@
 package com.dilarakiraz.traderapp.ui.login
 
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dilarakiraz.traderapp.PortfolioActivity
 import com.dilarakiraz.traderapp.common.Resource
 import com.dilarakiraz.traderapp.data.model.response.LoginResponse
 import com.dilarakiraz.traderapp.data.model.response.PortfolioResponse
@@ -36,11 +33,10 @@ class LoginViewModel(private val apiService: ApiService) : ViewModel() {
                 if (response.isSuccessful) {
                     response.body()?.let { loginResponse ->
                         if (loginResponse.result?.state == true) {
-                            _loginResult.value = Resource.Success(loginResponse)
-
+                            Log.d("LoginRequest", "Username: $username, Password: $password")
                             val accountNumber = loginResponse.defaultAccount
+                            _loginResult.value = Resource.Success(loginResponse, accountNumber)
 
-                            // Hesap numarasını kullanarak portföy ekranını aç
                             if (!accountNumber.isNullOrBlank()) {
                                 getPortfolio(accountNumber)
                             } else {
@@ -52,7 +48,8 @@ class LoginViewModel(private val apiService: ApiService) : ViewModel() {
                         }
                     }
                 } else {
-                    _loginResult.value = Resource.Error("Login request failed: ${response.message()}")
+                    _loginResult.value =
+                        Resource.Error("Login request failed: ${response.message()}")
                     Log.e("LoginViewModel", "Login request failed: ${response.message()}")
                 }
             } catch (e: Exception) {
@@ -62,7 +59,6 @@ class LoginViewModel(private val apiService: ApiService) : ViewModel() {
     }
 
     private fun getPortfolio(accountNumber: String) {
-        // Hesap numarasını kullanarak portföy sorgusunu yap
         viewModelScope.launch {
             try {
                 _portfolioResult.value = Resource.Loading()
@@ -71,7 +67,7 @@ class LoginViewModel(private val apiService: ApiService) : ViewModel() {
                 if (portfolioResponse.isSuccessful) {
                     portfolioResponse.body()?.let { portfolio ->
                         if (portfolio.state) {
-                            _portfolioResult.value = Resource.Success(portfolio)
+                            _portfolioResult.value = Resource.Success(portfolio, accountNumber)
                         } else {
                             _portfolioResult.value =
                                 Resource.Error("#Hesap özeti alınamadı. ${portfolio.description}")

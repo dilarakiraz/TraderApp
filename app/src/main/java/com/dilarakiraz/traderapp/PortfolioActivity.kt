@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.dilarakiraz.traderapp.common.Resource
 import com.dilarakiraz.traderapp.data.model.response.PortfolioItem
 import com.dilarakiraz.traderapp.databinding.ActivityPortfolioBinding
-import com.dilarakiraz.traderapp.ui.login.LoginViewModel
 import com.dilarakiraz.traderapp.ui.portfolio.PortfolioAdapter
 import com.dilarakiraz.traderapp.ui.portfolio.PortfolioViewModel
 
@@ -27,26 +26,25 @@ class PortfolioActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val accountId = intent.getStringExtra("account_id")
-
         viewModel.getPortfolio(accountId ?: "")
 
         val recyclerViewPortfolio: RecyclerView = findViewById(R.id.recyclerViewPortfolio)
         val textViewTotalAmount: TextView = findViewById(R.id.totalAmountTextView)
-
-
         recyclerViewPortfolio.layoutManager = LinearLayoutManager(this)
         recyclerViewPortfolio.adapter = portfolioAdapter
 
         viewModel.portfolioResult.observe(this) { resource ->
             when (resource) {
                 is Resource.Loading -> {
-
                 }
 
                 is Resource.Success -> {
                     resource.data?.let { portfolioResponse ->
                         for (item in portfolioResponse.items.orEmpty()) {
-                            Log.d("PortfolioItem", "Symbol: ${item.symbol}, Qty_T2: ${item.quantity}, LastPx: ${item.lastPrice}")
+                            Log.d(
+                                "PortfolioItem",
+                                "Symbol: ${item.symbol}, Qty_T2: ${item.quantity}, LastPx: ${item.lastPrice}"
+                            )
                         }
 
                         updatePortfolioItems(portfolioResponse.items.orEmpty())

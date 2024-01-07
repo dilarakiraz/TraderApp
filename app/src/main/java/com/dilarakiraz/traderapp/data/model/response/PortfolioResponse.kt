@@ -9,10 +9,10 @@ import com.google.gson.annotations.SerializedName
 
 data class PortfolioResponse(
     @SerializedName("State")
-    val state: Boolean, // API'den dönen başarı durumu
+    val state: Boolean,
 
     @SerializedName("Description")
-    val description: String?, // API'den dönen açıklama
+    val description: String?,
 
     @SerializedName("Items")
     val items: List<PortfolioItem>?,
