@@ -1,6 +1,7 @@
 package com.dilarakiraz.traderapp.di
 
 import com.dilarakiraz.traderapp.common.Constants.BASE_URL
+import com.dilarakiraz.traderapp.data.source.ApiService
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,11 +15,13 @@ object RetrofitBuilder {
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    fun getRetrofit(): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    fun getApiService(): ApiService {
+        return retrofit.create(ApiService::class.java)
     }
 }
